@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Práctica — Manual del Conductor CR 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#002b7f;--red:#ce1126;--gold:#fcd116;
+  --bg:#f0eeea;--card:#fff;--text:#1a1a2e;--muted:#6b6b7b;
+  --ok:#1a7f4b;--err:#c0392b;--ok-bg:#eafaf1;--err-bg:#fdecea;
+  --r:13px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+
+/* ── HEADER ── */
+header{background:var(--blue);}
+.stripe{height:5px;background:linear-gradient(90deg,var(--blue) 33%,var(--gold) 33% 66%,var(--red) 66%);}
+.hinner{max-width:680px;margin:0 auto;padding:18px 16px 14px;display:flex;align-items:center;gap:13px;}
+.shield{width:40px;height:44px;flex-shrink:0;}
+.htxt h1{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#fff;line-height:1.15;}
+.htxt p{color:var(--gold);font-size:.68rem;font-weight:600;margin-top:3px;letter-spacing:.07em;text-transform:uppercase;}
+
+/* ── PROGRESS ── */
+.prog-wrap{max-width:680px;margin:0 auto;padding:0 16px 14px;}
+.prog-meta{display:flex;justify-content:space-between;color:rgba(255,255,255,.7);font-size:.7rem;margin-bottom:5px;}
+.prog-track{height:5px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--gold);border-radius:99px;transition:width .45s ease;width:0%;}
+
+/* ── MAIN LAYOUT ── */
+/* Deja espacio en el fondo para el botón sticky */
+main{max-width:680px;margin:0 auto;padding:16px 14px 90px;}
+
+/* ── SCORE CHIPS ── */
+.chips{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1.5px solid rgba(0,43,127,.10);border-radius:99px;padding:4px 12px 4px 8px;font-size:.74rem;font-weight:500;}
+.dot{width:8px;height:8px;border-radius:50%;}
+.dok{background:var(--ok);}.derr{background:var(--err);}.dpend{background:#bbb;}
+
+/* ── MODE BUTTONS ── */
+.modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.modes label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;align-self:center;margin-right:2px;}
+.mbtn{font-family:'DM Sans',sans-serif;font-size:.71rem;font-weight:600;padding:5px 11px;border-radius:7px;border:1.5px solid rgba(0,43,127,.18);background:var(--card);color:var(--blue);cursor:pointer;transition:all .13s;}
+.mbtn:hover,.mbtn.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* ── QUESTION CARD ── */
+.qcard{background:var(--card);border-radius:var(--r);box-shadow:0 3px 18px rgba(0,43,127,.09);padding:22px 18px 18px;border:1.5px solid rgba(0,43,127,.06);animation:up .28s ease both;}
+@keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.qlabel{font-size:.65rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--blue);margin-bottom:7px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.qbadge{background:rgba(0,43,127,.08);border-radius:4px;padding:2px 7px;font-size:.61rem;color:var(--blue);font-weight:700;text-transform:uppercase;}
+.qtext{font-size:1rem;font-weight:500;line-height:1.5;margin-bottom:18px;}
+
+/* ── OPTIONS ── */
+.opts{display:flex;flex-direction:column;gap:8px;}
+.obtn{display:flex;align-items:flex-start;gap:11px;background:#f7f7fb;border:1.5px solid rgba(0,43,127,.10);border-radius:10px;padding:12px 14px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);transition:all .14s;width:100%;}
+.obtn:hover:not(:disabled){border-color:var(--blue);background:rgba(0,43,127,.04);}
+.obtn:disabled{cursor:default;}
+.oletter{width:26px;height:26px;border-radius:50%;background:rgba(0,43,127,.10);color:var(--blue);font-family:'Syne',sans-serif;font-weight:700;font-size:.72rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .14s;}
+.otext{line-height:1.38;padding-top:3px;}
+.obtn.ok{background:var(--ok-bg);border-color:var(--ok);}
+.obtn.ok .oletter{background:var(--ok);color:#fff;}
+.obtn.err{background:var(--err-bg);border-color:var(--err);}
+.obtn.err .oletter{background:var(--err);color:#fff;}
+.obtn.dim{opacity:.35;}
+
+/* ── FEEDBACK ── */
+.feedback{margin-top:14px;border-radius:10px;padding:11px 14px;font-size:.82rem;line-height:1.5;display:none;animation:up .2s ease both;}
+.feedback.show{display:block;}
+.feedback.fok{background:var(--ok-bg);border-left:4px solid var(--ok);color:#145c35;}
+.feedback.ferr{background:var(--err-bg);border-left:4px solid var(--err);color:#7b1a1a;}
+
+/* ── STICKY NAV BAR ── */
+.nav-sticky{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:#fff;
+  border-top:1.5px solid rgba(0,43,127,.12);
+  box-shadow:0 -4px 20px rgba(0,43,127,.10);
+  padding:10px 16px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  z-index:100;
+}
+/* Centrar dentro del max-width */
+.nav-inner{max-width:680px;margin:0 auto;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.nbtn{font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;border:none;border-radius:10px;padding:12px 22px;cursor:pointer;transition:all .14s;flex:1;max-width:160px;}
+.nbtn-sec{background:var(--bg);color:var(--muted);border:1.5px solid rgba(0,0,0,.12);}
+.nbtn-sec:hover{border-color:var(--blue);color:var(--blue);}
+.nbtn-pri{background:var(--blue);color:#fff;}
+.nbtn-pri:hover{background:#003a9e;}
+.nbtn:disabled{opacity:.38;cursor:default;}
+.nav-counter{font-size:.78rem;color:var(--muted);font-weight:600;text-align:center;flex:1;}
+
+/* ── RESULTS ── */
+#res{display:none;animation:up .35s ease both;}
+.rhero{text-align:center;padding:36px 16px 28px;background:var(--card);border-radius:var(--r);box-shadow:0 3px 18px rgba(0,43,127,.09);margin-bottom:16px;}
+.remoji{font-size:2.8rem;margin-bottom:10px;}
+.rtitle{font-family:'Syne',sans-serif;font-size:1.55rem;font-weight:800;color:var(--blue);margin-bottom:4px;}
+.rsub{color:var(--muted);font-size:.84rem;margin-bottom:20px;}
+.rpct{font-family:'Syne',sans-serif;font-size:3.4rem;font-weight:800;color:var(--blue);line-height:1;}
+.rpct span{font-size:.9rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;display:block;margin-top:3px;}
+.rbar-wrap{margin:18px auto 0;max-width:240px;}
+.rbar-track{height:8px;background:#eee;border-radius:99px;overflow:hidden;}
+.rbar-fill{height:100%;border-radius:99px;transition:width 1s cubic-bezier(.4,0,.2,1) .3s;}
+.rgrade{margin-top:14px;display:inline-block;padding:4px 16px;border-radius:99px;font-family:'Syne',sans-serif;font-weight:700;font-size:.84rem;letter-spacing:.04em;}
+.gA{background:#eafaf1;color:var(--ok);}.gB{background:#e8f4fd;color:#1a6fa8;}.gC{background:#fff8e1;color:#856404;}.gD{background:var(--err-bg);color:var(--err);}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px;}
+.sc{background:var(--card);border-radius:var(--r);box-shadow:0 2px 10px rgba(0,43,127,.08);padding:14px;text-align:center;border-top:4px solid;}
+.sc-ok{border-color:var(--ok);}.sc-err{border-color:var(--err);}.sc-tot{border-color:var(--blue);}
+.snum{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:2px;}
+.slbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.rev h3{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:10px;}
+.ritem{background:var(--card);border-radius:var(--r);box-shadow:0 2px 8px rgba(0,43,127,.07);padding:15px;margin-bottom:8px;border-left:5px solid;animation:up .25s ease both;}
+.ritem.rok{border-color:var(--ok);}.ritem.rerr{border-color:var(--err);}
+.rmeta{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.rmeta.mc{color:var(--ok);}.rmeta.me{color:var(--err);}
+.rq{font-weight:500;font-size:.87rem;margin-bottom:7px;line-height:1.42;}
+.rans{font-size:.78rem;display:flex;flex-direction:column;gap:3px;}
+.ryour{color:var(--err);}.rright{color:var(--ok);font-weight:600;}
+.rexp{margin-top:7px;font-size:.75rem;color:var(--muted);padding-top:7px;border-top:1px solid #eee;font-style:italic;line-height:1.5;}
+.restart{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:13px 30px;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;display:block;margin:20px auto 0;transition:all .14s;}
+.restart:hover{background:#003a9e;}
+
+@media(max-width:400px){
+  .sgrid{grid-template-columns:1fr 1fr;}
+  .sc-tot{grid-column:span 2;}
+  .htxt h1{font-size:1rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="stripe"></div>
+  <div class="hinner">
+    <svg class="shield" viewBox="0 0 54 60" fill="none">
+      <path d="M27 2L4 13V30C4 43.2 14.2 55.4 27 58C39.8 55.4 50 43.2 50 30V13L27 2Z" fill="#ce1126" stroke="#fcd116" stroke-width="2"/>
+      <path d="M27 8L10 17V30C10 40.6 17.6 50.4 27 53C36.4 50.4 44 40.6 44 30V17L27 8Z" fill="white"/>
+      <text x="27" y="38" text-anchor="middle" font-size="17" font-family="Arial" font-weight="bold" fill="#002b7f">CR</text>
+    </svg>
+    <div class="htxt">
+      <h1>Práctica — Manual del Conductor 2026</h1>
+      <p>COSEVI · 31 temas · Auto-calificada</p>
+    </div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-meta"><span id="plabel">Pregunta 1 de 40</span><span id="ppct">0%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+  </div>
+</header>
+
+<main>
+  <!-- chips -->
+  <div class="chips" id="chips">
+    <div class="chip"><span class="dot dok"></span><span id="cc">0</span> correctas</div>
+    <div class="chip"><span class="dot derr"></span><span id="cw">0</span> incorrectas</div>
+    <div class="chip"><span class="dot dpend"></span><span id="cp">40</span> pendientes</div>
+  </div>
+
+  <!-- modos -->
+  <div class="modes" id="modes">
+    <label>Modo:</label>
+    <button class="mbtn on" onclick="setMode('all',this)">Todos (40)</button>
+    <button class="mbtn" onclick="setMode('cap1',this)">Cap.1</button>
+    <button class="mbtn" onclick="setMode('cap2',this)">Cap.2</button>
+    <button class="mbtn" onclick="setMode('cap3',this)">Cap.3</button>
+    <button class="mbtn" onclick="setMode('cap4',this)">Cap.4</button>
+    <button class="mbtn" onclick="setMode('cap5',this)">Cap.5</button>
+    <button class="mbtn" onclick="setMode('cap6',this)">Cap.6</button>
+  </div>
+
+  <!-- quiz -->
+  <div id="quiz">
+    <div class="qcard" id="qcard">
+      <div class="qlabel"><span id="qnum">Pregunta 1</span><span class="qbadge" id="qtopic"></span></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div class="feedback" id="fb"></div>
+    </div>
+  </div>
+
+  <!-- resultados -->
+  <div id="res">
+    <div class="rhero">
+      <div class="remoji" id="remoji">🏆</div>
+      <div class="rtitle" id="rtitle"></div>
+      <div class="rsub" id="rsub"></div>
+      <div class="rpct" id="rpct">0%<span>de respuestas correctas</span></div>
+      <div class="rbar-wrap"><div class="rbar-track"><div class="rbar-fill" id="rbar" style="width:0%"></div></div></div>
+      <div class="rgrade" id="rgrade"></div>
+    </div>
+    <div class="sgrid">
+      <div class="sc sc-ok"><div class="snum" id="sok" style="color:var(--ok)">0</div><div class="slbl">✅ Correctas</div></div>
+      <div class="sc sc-err"><div class="snum" id="serr" style="color:var(--err)">0</div><div class="slbl">❌ Incorrectas</div></div>
+      <div class="sc sc-tot"><div class="snum" id="stot" style="color:var(--blue)">40</div><div class="slbl">📋 Total</div></div>
+    </div>
+    <div class="rev"><h3>📖 Revisión detallada</h3><div id="revlist"></div></div>
+    <button class="restart" onclick="restart()">🔄 Nueva práctica</button>
+  </div>
+</main>
+
+<!-- BOTÓN SIEMPRE VISIBLE EN LA PARTE INFERIOR -->
+<div class="nav-sticky" id="navbar">
+  <div class="nav-inner">
+    <button class="nbtn nbtn-sec" id="bprev" onclick="go(-1)">← Anterior</button>
+    <span class="nav-counter" id="navctr">1 / 40</span>
+    <button class="nbtn nbtn-pri" id="bnext" onclick="go(1)">Siguiente →</button>
+  </div>
+</div>
+
+<script>
+const BANK=[
+  {cap:'cap1',topic:'T1 Qué es conducir',q:'¿Cuál es el elemento más importante de la trilogía vial?',opts:['El vehículo','El ser humano (conductor)','La vía y su entorno','Las señales de tránsito'],ans:1,exp:'El elemento más importante de la circulación son los conductores (factor humano), ya que el movimiento de los vehículos en la carretera depende fundamentalmente de ellos.'},
+  {cap:'cap1',topic:'T1 Qué es conducir',q:'¿Cuántos tipos de conductor define la Ley de Tránsito?',opts:['Dos','Tres','Cuatro','Cinco'],ans:2,exp:'La ley define cuatro tipos: novato, profesional, no tipificado en la ley (común) y no acreditado.'},
+  {cap:'cap1',topic:'T1 Qué es conducir',q:'¿En qué año se publicó el primer Código de Circulación de Costa Rica?',opts:['1912','1920','1930','1976'],ans:1,exp:'En 1920 se publicó el primer Código de Circulación, posicionando a Costa Rica como líder en seguridad vial en Latinoamérica.'},
+  {cap:'cap1',topic:'T1 Qué es conducir',q:'¿Cuántos objetivos tiene la Seguridad Vial según el manual?',opts:['5','6','8','10'],ans:2,exp:'Los 8 objetivos incluyen: prevenir accidentes, dar fluidez al tránsito, reducir contaminación, proteger la infraestructura, conservar el parque automotor, reducir consumo de energía, educar al ciudadano y capacitar al funcionario público.'},
+  {cap:'cap1',topic:'T2 Movilidad',q:'¿Cuántas acciones incorpora el enfoque de Sistema Seguro?',opts:['3','4','5','6'],ans:2,exp:'Cinco acciones: infraestructura vial segura, vehículos más seguros, usuarios más seguros, mejores políticas y mejor asistencia a las víctimas.'},
+  {cap:'cap1',topic:'T2 Movilidad',q:'¿Cuál es la velocidad máxima en zonas escolares señalizadas?',opts:['15 km/h','25 km/h','30 km/h','40 km/h'],ans:1,exp:'En zonas escolares señalizadas la velocidad máxima es 25 km/h.'},
+  {cap:'cap1',topic:'T3 Factores de riesgo',q:'¿Qué es el "círculo de seguridad"?',opts:['La distancia mínima entre vehículos','Una revisión diaria del vehículo para detectar situaciones a corregir','El espacio alrededor de una señal de pare','El área segura en un accidente'],ans:1,exp:'Revisión diaria para detectar situaciones a corregir: llantas, luces, silenciador, niveles de líquidos y escobillas.'},
+  {cap:'cap1',topic:'T3 Factores de riesgo',q:'¿Qué recomienda el manual ante baja visibilidad nocturna?',opts:['Usar solo luces de posición','Reducir la velocidad a la mitad de la usada en el día','Encender las de emergencia y continuar','Detenerse en el espaldón'],ans:1,exp:'Se recomienda reducir la velocidad a la mitad de la usada en el día y cambiar las luces largas a cortas con suficiente antelación.'},
+  {cap:'cap1',topic:'T4 Accidentes',q:'¿Qué es la Declaración de Accidente Menor (DAM)?',opts:['Un informe policial','Procedimiento para accidentes con heridos graves','Procedimiento simplificado para accidentes solo con daños materiales sin heridos','Formulario para reclamar el marchamo'],ans:2,exp:'La DAM es un procedimiento simplificado para accidentes con solo daños materiales y sin personas heridas.'},
+  {cap:'cap1',topic:'T4 Accidentes',q:'¿Cuál es la causa principal del choque de frente?',opts:['Exceso de velocidad','Invasión del carril izquierdo al adelantar','No usar los espejos','Frenada brusca del de adelante'],ans:1,exp:'La invasión del carril izquierdo al realizar un adelantamiento es la principal causa del choque de frente.'},
+  {cap:'cap1',topic:'T5 Medios de transporte',q:'¿Cuántos pasajeros sentados puede transportar un microbús?',opts:['Hasta 8','Entre 9 y 25','Entre 26 y 44','Más de 44'],ans:1,exp:'El microbús tiene capacidad para 9 a 25 pasajeros sentados.'},
+  {cap:'cap1',topic:'T5 Medios de transporte',q:'¿Cuál es la capacidad mínima de pasajeros que define a un autobús?',opts:['Más de 25','Más de 35','Más de 44','Más de 50'],ans:2,exp:'El autobús tiene capacidad para más de 44 pasajeros sentados.'},
+  {cap:'cap1',topic:'T6 Entorno vial',q:'¿Cuántos carriles mínimo tiene una autopista?',opts:['Dos','Tres','Cuatro','Seis'],ans:2,exp:'Las autopistas son vías de acceso restringido de cuatro o más carriles de circulación.'},
+  {cap:'cap1',topic:'T6 Entorno vial',q:'¿Cuáles son las tres grandes categorías de vías en Costa Rica?',opts:['Autopistas, carreteras y caminos','Carreteras, calles y caminos','Vías rápidas, secundarias y locales','Vías urbanas, rurales e interurbanas'],ans:1,exp:'La Ley de Tránsito clasifica las vías en: carreteras (primarias, secundarias y terciarias), calles (locales) y caminos (vecinales y no clasificados).'},
+  {cap:'cap1',topic:'T6 Entorno vial',q:'¿Qué es el espaldón de una carretera?',opts:['Carril exclusivo de buses','Sección contigua a la calzada que sirve para peatones y emergencias','Espacio central que separa carriles contrarios','Zona de peaje'],ans:1,exp:'El espaldón es la sección contigua a la calzada que sirve para el tránsito de peatones y emergencias. Está prohibido estacionar ahí.'},
+  {cap:'cap1',topic:'T7 Licencia',q:'¿Cuál es la edad mínima para obtener la licencia B-1?',opts:['16 años','17 años','18 años','20 años'],ans:2,exp:'Para la licencia B-1 se requieren 18 años cumplidos.'},
+  {cap:'cap1',topic:'T7 Licencia',q:'¿Qué licencia se requiere para conducir un vehículo articulado (tráiler)?',opts:['B-1','B-2','B-3','B-4'],ans:3,exp:'La B-4 autoriza vehículos articulados. Exige 22 años y tres años de experiencia con B o C.'},
+  {cap:'cap1',topic:'T7 Licencia',q:'¿Cuánto dura la primera suspensión por acumular el total de puntos?',opts:['6 meses','12 meses','18 meses','24 meses'],ans:1,exp:'Primera suspensión: 12 meses. Segunda: 24 meses. Tercera en adelante: 36 meses.'},
+  {cap:'cap1',topic:'T7 Licencia',q:'¿Cuántos puntos máximo puede acumular un conductor con licencia de 6 años?',opts:['6','8','10','12'],ans:3,exp:'Licencia de 6 años: máx. 12 puntos. De 4 años: 8. De 3 años: 6.'},
+  {cap:'cap1',topic:'T8 Documentos',q:'¿Qué es el marchamo?',opts:['Permiso de importación del vehículo','Pago obligatorio anual de seguro vehicular ante el INS','Documento de propiedad del vehículo','La revisión técnica vehicular'],ans:1,exp:'El marchamo es el pago anual obligatorio de seguro vehicular ante el INS, que da origen al derecho de circulación por un año.'},
+  {cap:'cap1',topic:'T8 Documentos',q:'¿Cuántos caracteres tiene el código VIN?',opts:['12','15','17','20'],ans:2,exp:'El VIN es un código de identificación compuesto por 17 caracteres: identifica fabricante, modelo, año y número de serie.'},
+  {cap:'cap1',topic:'T9 Placas',q:'¿Qué indica una placa metálica con fondo verde?',opts:['Vehículo de emergencia','Vehículo eléctrico','Transporte público','Más de 10 años de antigüedad'],ans:1,exp:'Las placas con fondo verde indican que el vehículo utiliza energía eléctrica.'},
+  {cap:'cap1',topic:'T9 Placas',q:'¿Dónde se coloca la placa adhesiva (tercera placa)?',opts:['Vidrio trasero, esquina inferior izquierda','Vidrio delantero, extremo superior derecho','Vidrio delantero, extremo inferior izquierdo','En el espejo retrovisor'],ans:1,exp:'La placa adhesiva va en el vidrio delantero, extremo superior derecho.'},
+  {cap:'cap1',topic:'T10 Convivencia',q:'¿Cuál es la distancia lateral mínima para rebasar a un ciclista?',opts:['0,5 metros','1 metro','1,5 metros','2 metros'],ans:2,exp:'Al rebasar a un ciclista se deben mantener mínimo 1,50 m de separación.'},
+  {cap:'cap1',topic:'T10 Convivencia',q:'¿Qué usuario tiene la máxima prioridad de paso en cualquier cruce?',opts:['Vehículos de emergencia con sirenas','Vehículos sobre rieles (tren)','Inspectores de tránsito','Vehículos en carretera primaria'],ans:1,exp:'Los vehículos sobre rieles (el tren) tienen la máxima prioridad en cualquier cruce.'},
+  {cap:'cap1',topic:'T10 Convivencia',q:'¿A partir de qué velocidad la probabilidad de sobrevivir un atropello baja a menos del 10%?',opts:['Más de 20 km/h','Más de 30 km/h','Más de 40 km/h','Más de 60 km/h'],ans:2,exp:'A más de 40 km/h, la probabilidad de que un peatón sobreviva a un atropello baja a menos del 10%.'},
+  {cap:'cap1',topic:'T11 Conducción inteligente',q:'¿Cuál es la posición correcta de las manos en el volante?',opts:['"9 y 3"','Posición 10:10','Una mano arriba','Libre según comodidad'],ans:1,exp:'La posición 10:10 permite mayor control y reacción ante maniobras imprevistas.'},
+  {cap:'cap1',topic:'T12 Atención y percepción',q:'¿Qué son los puntos ciegos de un vehículo?',opts:['Zonas sin señalización','Áreas que el conductor no puede ver por los espejos','Ángulos muertos en curvas','Zonas de parqueo no visibles'],ans:1,exp:'Los puntos ciegos son áreas alrededor del vehículo que no se pueden ver a través de los espejos retrovisores.'},
+  {cap:'cap1',topic:'T13 Preparación del viaje',q:'¿En qué consiste la regla de los 3 segundos en autopista?',opts:['Esperar 3 segundos en verde','Mantener distancia equivalente a 3 segundos respecto al vehículo de adelante','Parar cada 3 horas','Señalizar 3 segundos antes de girar'],ans:1,exp:'La regla de los 3 segundos: desde que el vehículo delante pasa un punto fijo, usted debe contar 3 segundos antes de alcanzarlo.'},
+
+  // CAP 2
+  {cap:'cap2',topic:'T14 Señales',q:'¿Cuál es la forma y color principal de las señales de prevención?',opts:['Circular con borde rojo','Cuadrada en rombo, fondo amarillo y símbolos negros','Triangular con fondo rojo','Rectangular fondo verde'],ans:1,exp:'Las señales de prevención son cuadradas en posición de rombo, fondo amarillo y símbolos negros. En obras el fondo es naranja.'},
+  {cap:'cap2',topic:'T14 Señales',q:'¿Qué color tienen las señales de información para carreteras de gran velocidad?',opts:['Azul','Blanco con bordes negros','Verde','Café'],ans:2,exp:'Las señales de información en carreteras importantes tienen fondo verde. Las azules indican servicios o turismo; las café, parques nacionales.'},
+  {cap:'cap2',topic:'T14 Señales',q:'¿Qué prioridad tienen las instrucciones manuales de un oficial de tránsito?',opts:['Solo sobre señales horizontales','Solo sobre semáforos','Prioridad máxima, anulan cualquier señal o semáforo','Igual prioridad que semáforo en verde'],ans:2,exp:'Las instrucciones del oficial de tránsito tienen prioridad máxima y anulan cualquier señal, semáforo o demarcación.'},
+  {cap:'cap2',topic:'T14 Señales',q:'¿Qué significa la línea amarilla en el borde del caño?',opts:['Señal de curva','Prohibición de estacionamiento','Carril exclusivo de buses','Zona de carga y descarga'],ans:1,exp:'La línea amarilla en el borde del caño indica prohibición de estacionamiento.'},
+  {cap:'cap2',topic:'T14 Señales',q:'¿Qué función tienen las señales de color café?',opts:['Indicar zonas industriales','Señalar parques nacionales o áreas silvestres','Indicar servicios de emergencia','Delimitar zonas de peaje'],ans:1,exp:'Las señales de fondo café señalan parques nacionales o áreas silvestres protegidas.'},
+  {cap:'cap2',topic:'T15 Velocidades',q:'¿Cuál es la velocidad mínima en autopistas?',opts:['40 km/h','50 km/h','60 km/h','80 km/h'],ans:1,exp:'En autopistas la velocidad mínima es 50 km/h cuando no hay señalización específica.'},
+  {cap:'cap2',topic:'T15 Velocidades',q:'¿Cuál es la velocidad máxima dentro de una rotonda?',opts:['20 km/h','30 km/h','40 km/h','50 km/h'],ans:1,exp:'Dentro de una rotonda la velocidad máxima es 30 km/h. Los vehículos que ya circulan dentro tienen prioridad.'},
+  {cap:'cap2',topic:'T15 Velocidades',q:'¿Cuál es el límite general en carreteras nacionales?',opts:['80 km/h','100 km/h','120 km/h','Sin límite'],ans:1,exp:'El límite general en carreteras nacionales es 100 km/h.'},
+  {cap:'cap2',topic:'T15 Velocidades',q:'¿Qué velocidad genera infracción tipo A (6 puntos)?',opts:['Más de 80 km/h','Superar el límite en más de 20 km/h','Más de 120 km/h','Más de 150 km/h'],ans:2,exp:'Conducir a más de 120 km/h es infracción Categoría A (6 puntos). Superar el límite en más de 40 km/h es Categoría B (4 puntos).'},
+
+  // CAP 3
+  {cap:'cap3',topic:'T16 Mandos',q:'¿Qué hacer si se enciende una alarma ROJA en el panel?',opts:['Bajar velocidad y continuar al taller','Detener el vehículo inmediatamente en lugar seguro','Ignorarla si marcha bien','Activar luces de emergencia y continuar'],ans:1,exp:'Las alarmas rojas indican problema crítico. Se debe detener el vehículo inmediatamente en lugar seguro.'},
+  {cap:'cap3',topic:'T17 Visibilidad',q:'¿Para qué sirven los espejos retrovisores?',opts:['Seguridad activa para evitar colisiones','Permiten observar la vía detrás y a los lados','Accesorios opcionales','Sistemas de asistencia al estacionamiento'],ans:1,exp:'Los espejos retrovisores son obligatorios y permiten al conductor ver la vía detrás y a los lados.'},
+  {cap:'cap3',topic:'T18 Llantas',q:'¿Con qué frecuencia se recomienda rotar las llantas?',opts:['Cada 5.000 km','Cada 10.000–15.000 km','Cada 20.000 km','Cada 30.000 km'],ans:1,exp:'Se recomienda rotar las llantas cada 10.000 a 15.000 km para desgaste uniforme.'},
+  {cap:'cap3',topic:'T18 Llantas',q:'¿Qué es el testigo de llanta?',opts:['Indicador electrónico','Elevación dentro de los canales de agua que muestra el nivel de desgaste','El número de serie de la llanta','La presión máxima indicada'],ans:1,exp:'El testigo de llanta es una elevación dentro de los canales de agua. Cuando la superficie lo alcanza, la llanta debe reemplazarse.'},
+  {cap:'cap3',topic:'T19 Frenos',q:'¿Qué función cumple el sistema ABS?',opts:['Aumentar la potencia de frenado','Prevenir el bloqueo de ruedas en frenada brusca','Activar el freno de mano automáticamente','Reducir consumo en frenado'],ans:1,exp:'El ABS previene el bloqueo de las ruedas en frenada brusca, manteniendo el control de dirección.'},
+  {cap:'cap3',topic:'T19 Frenos',q:'¿Qué hacer en descensos largos para no sobrecalentar los frenos?',opts:['Mantener freno de servicio aplicado constantemente','Apagar el motor','Usar freno motor con marchas bajas y frenos de servicio de forma intermitente','Mantener freno de mano semiaplicado'],ans:2,exp:'En descensos largos se usa el freno motor con marchas bajas y frenos de servicio de forma intermitente para evitar el sobrecalentamiento.'},
+  {cap:'cap3',topic:'T20 Transmisión',q:'¿Cuántos tipos de transmisión describe el manual?',opts:['2','3','4','5'],ans:2,exp:'El manual describe cuatro tipos: manual, automática, CVT (variación continua) y semiautomática.'},
+  {cap:'cap3',topic:'T21-22 Mantenimiento',q:'¿Cuál es la diferencia entre mantenimiento preventivo y correctivo?',opts:['El correctivo es más barato','El preventivo se hace después de una avería','El correctivo repara fallas existentes; el preventivo las anticipa','Son sinónimos'],ans:2,exp:'El mantenimiento correctivo repara fallas existentes; el preventivo las anticipa mediante revisiones y cambios programados.'},
+
+  // CAP 4
+  {cap:'cap4',topic:'T23 Maniobras',q:'¿Cuántos metros máximos se puede hacer en reversa?',opts:['20 metros','50 metros','100 metros','Sin límite'],ans:1,exp:'La reversa tiene un máximo de 50 metros y debe hacerse a menos de 20 km/h.'},
+  {cap:'cap4',topic:'T23 Maniobras',q:'¿Cuándo NO está permitido adelantar?',opts:['En rectas con buena visibilidad','En zonas urbanas de día','En curvas, intersecciones o zonas de baja visibilidad','En autopistas con carril izquierdo libre'],ans:2,exp:'Está prohibido adelantar en curvas, intersecciones, zonas de baja visibilidad o donde haya señal de prohibición.'},
+  {cap:'cap4',topic:'T24 Conducción',q:'¿Qué prioridad tienen los vehículos dentro de una rotonda?',opts:['Los que ingresan','Los que ya están dentro','Igual prioridad','Depende del tamaño'],ans:1,exp:'Los vehículos que ya circulan dentro de la rotonda tienen prioridad sobre los que ingresan.'},
+  {cap:'cap4',topic:'T24 Conducción',q:'¿A qué distancia de un hidrante está prohibido estacionar?',opts:['3 metros','5 metros','10 metros','15 metros'],ans:1,exp:'Está prohibido estacionar a menos de 5 metros de un hidrante de incendios.'},
+  {cap:'cap4',topic:'T24 Conducción',q:'¿A qué distancia de una intersección está prohibido estacionar?',opts:['5 metros','10 metros','15 metros','20 metros'],ans:1,exp:'Está prohibido estacionar a menos de 10 metros de una intersección o cruce peatonal.'},
+  {cap:'cap4',topic:'T25 Detención',q:'¿A qué distancia máxima del borde de la acera deben quedar las llantas al estacionar?',opts:['10 cm','20 cm','30 cm','50 cm'],ans:2,exp:'En zonas urbanas, las llantas deben quedar a no más de 30 cm del borde de la acera.'},
+  {cap:'cap4',topic:'T25 Detención',q:'¿Qué debe mantenerse activado en todo vehículo estacionado?',opts:['Luces de emergencia','Freno de emergencia (freno de mano)','Luces de posición','Señalización de viraje'],ans:1,exp:'Todo vehículo estacionado debe tener activado el freno de emergencia. Vehículos de carga de más de 2 toneladas también deben calzarse.'},
+
+  // CAP 5
+  {cap:'cap5',topic:'T26 Peligros',q:'¿Qué es el hidroplaneamiento?',opts:['Conducir bajo lluvia intensa','Pérdida de tracción al deslizarse las llantas sobre agua','Frenado en superficie mojada','Efecto de ráfagas de viento lateral'],ans:1,exp:'El hidroplaneamiento es la pérdida de tracción al deslizarse las llantas sobre una capa de agua, pudiendo causar pérdida total del control.'},
+  {cap:'cap5',topic:'T26 Peligros',q:'¿Cuántas veces puede multiplicarse el peso de un objeto suelto en frenada brusca?',opts:['10 veces','20 veces','50 veces','100 veces'],ans:2,exp:'Objetos sueltos pueden multiplicar su peso hasta 50 veces en una frenada brusca, convirtiéndose en proyectiles peligrosos.'},
+  {cap:'cap5',topic:'T27 Exigencias',q:'¿Cuál de estos factores aumenta el tiempo de reacción?',opts:['El aire acondicionado','Fatiga, somnolencia e intoxicación por sustancias','Música suave','Llevar pasajeros'],ans:1,exp:'La fatiga, somnolencia e intoxicación disminuyen la atención y aumentan el tiempo de reacción.'},
+  {cap:'cap5',topic:'T28 Protección',q:'¿A partir de qué edad puede un menor ir en el asiento delantero con airbag activo?',opts:['10 años','13 años','14 años','16 años'],ans:1,exp:'El airbag es peligroso para menores de 13 años en el asiento delantero. Deben ir atrás con su sistema de retención infantil.'},
+  {cap:'cap5',topic:'T28 Protección',q:'¿Cuántos tipos de Sistemas de Retención Infantil (SRI) describe el manual?',opts:['2','3','4','5'],ans:2,exp:'El manual describe 4 tipos de SRI, que se eligen según el peso y talla del menor.'},
+  {cap:'cap5',topic:'T28 Protección',q:'¿Cuál es el límite de alcohol en sangre para conductores generales (categoría A)?',opts:['Más de 0,30 g/l','Más de 0,50 g/l','Más de 0,75 g/l','Más de 1,00 g/l'],ans:1,exp:'Para conductores generales el límite es más de 0,50 g/l en sangre. Para novatos y profesionales es más de 0,20 g/l.'},
+  {cap:'cap5',topic:'T28 Protección',q:'¿Cuál es el límite de alcohol para conductores novatos y profesionales?',opts:['Más de 0,20 g/l','Más de 0,30 g/l','Más de 0,50 g/l','Más de 0,75 g/l'],ans:0,exp:'Para novatos y profesionales el límite es más de 0,20 g/l, más estricto que para conductores generales (0,50 g/l).'},
+  {cap:'cap5',topic:'T29 Factores',q:'¿Qué NO se debe hacer ante un herido en accidente de tránsito?',opts:['Llamar al 9-1-1','Mantener la calma','Mover al herido para ponerlo cómodo','Indicar cuántas personas están heridas'],ans:2,exp:'Nunca mover a un herido: puede agravar lesiones en columna. Llamar al 9-1-1 y mantenerlo inmóvil.'},
+  {cap:'cap5',topic:'T30 Comportamiento',q:'¿Cuál es la primera acción ante un accidente con víctimas?',opts:['Mover los vehículos','Llevar al herido al hospital','Avisar al 9-1-1 y mantener la serenidad','Fotografiar la escena primero'],ans:2,exp:'La prioridad es llamar al 9-1-1 y mantener la serenidad para dar información clara sobre el accidente y el estado de los heridos.'},
+
+  // CAP 6
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Cuál es la Ley de Tránsito vigente en Costa Rica?',opts:['Ley 5930','Ley 7331','Ley 9078','Ley 6324'],ans:2,exp:'La Ley N° 9078 (Ley de Tránsito por Vías Públicas Terrestres y Seguridad Vial), del 26 de octubre de 2012, es la vigente.'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Cuántos puntos acarrea una infracción de Categoría A?',opts:['2 puntos','4 puntos','6 puntos','8 puntos'],ans:2,exp:'Las infracciones de Categoría A acarrean 6 puntos. Incluyen: conducir bajo alcohol (>0,50 g/l), superar 120 km/h, adelantar en zona prohibida, licencia suspendida.'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Cuántos puntos acarrea una infracción de Categoría B?',opts:['2 puntos','4 puntos','6 puntos','8 puntos'],ans:1,exp:'Las infracciones de Categoría B acarrean 4 puntos. Incluyen: menores sin SRI, irrespetar ALTO o luz roja, placas falsas, superar el límite en más de 40 km/h.'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿A qué velocidad aplican sanciones penales (cárcel 1–3 años)?',opts:['Más de 100 km/h','Más de 120 km/h','Más de 150 km/h','Más de 180 km/h'],ans:2,exp:'Las sanciones penales (artículo 261 bis del Código Penal) aplican por conducir a más de 150 km/h o participar en "piques".'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Cuántas horas puede permanecer detenido un infractor en flagrancia por infracción penal grave?',opts:['24 horas','48 horas','72 horas','96 horas'],ans:3,exp:'Un infractor puede permanecer hasta 96 horas en celdas del OIJ antes de ser presentado ante un juez.'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Qué reconoce la Ley de Movilidad Ciclista sobre la bicicleta?',opts:['Solo puede circular en ciclovías','Es un vehículo con derecho al centro del carril','Está prohibida en autopistas','El casco es obligatorio o hay multa'],ans:1,exp:'La Ley de Movilidad Ciclista reconoce que la bicicleta es un vehículo con derecho a ocupar el centro del carril.'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Cómo se puede descontar la mitad de los puntos acumulados?',opts:['Pagando multa adicional al COSEVI','Con trabajo comunal o aprobando un curso de reeducación vial','Presentando certificado médico','Automáticamente al renovar la licencia'],ans:1,exp:'Se puede descontar la mitad de los puntos acumulados mediante trabajo comunal o aprobando un curso de reeducación vial.'},
+  {cap:'cap6',topic:'T31 Leyes',q:'¿Cuál es la infracción por usar el celular sin manos libres al conducir?',opts:['Categoría A (6 puntos)','Categoría B (4 puntos)','Categoría C (sin puntos, solo multa)','Categoría D'],ans:2,exp:'Usar el celular sin manos libres es Categoría C: no genera puntos pero sí multa económica.'},
+];
+
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+let Q=[],cur=0,ans=[],mode='all';
+
+function setMode(m,btn){
+  mode=m;
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('res').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('chips').style.display='flex';
+  document.getElementById('modes').style.display='flex';
+  document.getElementById('navbar').style.display='flex';
+  init();
+}
+
+function init(){
+  let pool=mode==='all'?BANK:BANK.filter(q=>q.cap===mode);
+  pool=shuf(pool);
+  const n=mode==='all'?40:Math.min(pool.length,20);
+  Q=pool.slice(0,n);
+  ans=new Array(Q.length).fill(null);
+  cur=0;
+  chips();render();
+}
+
+function render(){
+  const q=Q[cur];
+  document.getElementById('qnum').textContent=`Pregunta ${cur+1}`;
+  document.getElementById('qtopic').textContent=q.topic;
+  document.getElementById('qtext').textContent=q.q;
+  const ol=document.getElementById('opts');ol.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    if(i>=q.opts.length)return;
+    const b=document.createElement('button');b.className='obtn';
+    b.innerHTML=`<span class="oletter">${l}</span><span class="otext">${q.opts[i]}</span>`;
+    b.onclick=()=>pick(i);
+    ol.appendChild(b);
+  });
+  const fb=document.getElementById('fb');fb.className='feedback';fb.innerHTML='';
+  if(ans[cur]!==null){applyState(ans[cur]);showFb(ans[cur]);}
+  prog();nav();
+  // Scroll al tope de la card sin afectar el botón
+  document.getElementById('qcard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function pick(i){
+  if(ans[cur]!==null)return;
+  ans[cur]=i;applyState(i);showFb(i);chips();prog();nav();
+}
+
+function applyState(sel){
+  const q=Q[cur];
+  document.querySelectorAll('.obtn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('ok');
+    else if(i===sel&&sel!==q.ans)b.classList.add('err');
+    else b.classList.add('dim');
+  });
+}
+
+function showFb(sel){
+  const q=Q[cur];const fb=document.getElementById('fb');
+  if(sel===q.ans){fb.className='feedback fok show';fb.innerHTML=`<strong>✅ ¡Correcto!</strong> ${q.exp}`;}
+  else{fb.className='feedback ferr show';fb.innerHTML=`<strong>❌ Incorrecto.</strong> Respuesta correcta: <strong>"${q.opts[q.ans]}"</strong>. ${q.exp}`;}
+}
+
+function go(d){
+  const n=cur+d;if(n<0)return;
+  if(n>=Q.length){showRes();return;}
+  cur=n;render();
+}
+
+function prog(){
+  const done=ans.filter(a=>a!==null).length;
+  const p=Math.round((done/Q.length)*100);
+  document.getElementById('pfill').style.width=p+'%';
+  document.getElementById('plabel').textContent=`Pregunta ${cur+1} de ${Q.length}`;
+  document.getElementById('ppct').textContent=p+'%';
+}
+
+function nav(){
+  document.getElementById('bprev').disabled=cur===0;
+  document.getElementById('navctr').textContent=`${cur+1} / ${Q.length}`;
+  const isLast=cur===Q.length-1;
+  const allDone=ans.every(a=>a!==null);
+  const nb=document.getElementById('bnext');
+  if(isLast){nb.textContent=allDone?'📊 Resultados':'Resultados →';nb.style.background=allDone?'var(--ok)':'';}
+  else{nb.textContent='Siguiente →';nb.style.background='';}
+}
+
+function chips(){
+  const ok=ans.filter((a,i)=>a===Q[i].ans).length;
+  const bad=ans.filter((a,i)=>a!==null&&a!==Q[i].ans).length;
+  const pend=Q.length-ans.filter(a=>a!==null).length;
+  document.getElementById('cc').textContent=ok;
+  document.getElementById('cw').textContent=bad;
+  document.getElementById('cp').textContent=pend;
+}
+
+function showRes(){
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('chips').style.display='none';
+  document.getElementById('navbar').style.display='none';
+  const rs=document.getElementById('res');rs.style.display='block';
+  const ok=ans.filter((a,i)=>a===Q[i].ans).length;
+  const bad=Q.length-ok;const p=Math.round((ok/Q.length)*100);
+  document.getElementById('sok').textContent=ok;
+  document.getElementById('serr').textContent=bad;
+  document.getElementById('stot').textContent=Q.length;
+  document.getElementById('rpct').innerHTML=`${p}%<span>de respuestas correctas</span>`;
+  setTimeout(()=>{const b=document.getElementById('rbar');b.style.width=p+'%';b.style.background=p>=70?'var(--ok)':p>=50?'#f59e0b':'var(--err)';},100);
+  let em,ti,su,gc,gt;
+  if(p>=90){em='🏆';ti='¡Excelente!';su='Estás muy bien preparado/a para el examen oficial.';gc='gA';gt='Sobresaliente';}
+  else if(p>=75){em='🎉';ti='¡Muy bien!';su='Buen desempeño. Repasa los temas donde fallaste.';gc='gB';gt='Bueno';}
+  else if(p>=60){em='📚';ti='¡Puedes mejorar!';su='Revisa los temas fallados antes del examen.';gc='gC';gt='Regular';}
+  else{em='💪';ti='¡Hay que estudiar más!';su='Repasa el manual con calma.';gc='gD';gt='Necesita mejorar';}
+  document.getElementById('remoji').textContent=em;document.getElementById('rtitle').textContent=ti;document.getElementById('rsub').textContent=su;
+  const g=document.getElementById('rgrade');g.textContent=gt;g.className='rgrade '+gc;
+  const rl=document.getElementById('revlist');rl.innerHTML='';
+  Q.forEach((q,i)=>{
+    const ua=ans[i];const isc=ua===q.ans;
+    const d=document.createElement('div');d.className=`ritem ${isc?'rok':'rerr'}`;d.style.animationDelay=(i*.02)+'s';
+    d.innerHTML=`<div class="rmeta ${isc?'mc':'me'}">${isc?'✅ Correcta':'❌ Incorrecta'} · ${q.topic}</div><div class="rq">${q.q}</div><div class="rans">${!isc?`<div class="ryour">Tu respuesta: ${q.opts[ua]}</div>`:''}<div class="rright">✔ Correcta: ${q.opts[q.ans]}</div></div><div class="rexp">${q.exp}</div>`;
+    rl.appendChild(d);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restart(){
+  document.getElementById('res').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('chips').style.display='flex';
+  document.getElementById('navbar').style.display='flex';
+  init();
+}
+
+init();
+</script>
+</body>
+</html>
